@@ -1,4 +1,4 @@
-const SauceModel = require('../models/sauce');
+const SauceModel = require('../models/sauce.js');
 
 exports.getOneSauce = (req, res, next) => {
     SauceModel.findOne({
@@ -14,21 +14,27 @@ exports.getOneSauce = (req, res, next) => {
 
 exports.createSauce = (req, res, next) => {
     console.log('[POST] Sauce');
-    const body = req.body;
+    const body = JSON.parse(req.body.sauce);
+    delete body._id;
+
+    console.log(body, 'body');
     const Sauce = new SauceModel({
-        id: body.id,
-        userId: body.userId,
-        name: body.name,
-        manufacturer: body.manufacturer,
-        description: body.description,
-        mainPepper: body.mainPepper,
-        imageUrl: body.imageUrl,
-        heat: body.heat,
-        likes: body.likes,
-        dislikes: body.dislikes,
-        usersLiked: body.usersLiked,
-        usersDisliked: body.usersDisliked
+        // userId: body.userId,
+        // name: body.name,
+        // manufacturer: body.manufacturer,
+        // description: body.description,
+        // mainPepper: body.mainPepper,
+        // imageUrl: body.imageUrl,
+        // heat: body.heat,
+        // likes: body.likes,
+        // dislikes: body.dislikes,
+        // usersLiked: body.usersLiked,
+        // usersDisliked: body.usersDisliked
+        ...body,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`    
     });
+    console.log(Sauce, 'sauce');
+    console.log(Sauce.imageUrl);
     Sauce.save().then(() => {
         res.status(201).json({
             message: 'Post saved successfully!'
