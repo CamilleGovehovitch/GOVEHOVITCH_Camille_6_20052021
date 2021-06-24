@@ -5,11 +5,11 @@ const router = express.Router();
 
 const sauceController = require('../controllers/sauceController');
 
-router.get('/', sauceController.getAllSauce);
-router.get('/:id', sauceController.getOneSauce);
-router.post('/', multer, sauceController.createSauce);
-router.put('/:id', sauceController.modifyOneSauce);
+router.get('/', auth, sauceController.getAllSauce);
+router.get('/:id', auth, sauceController.getOneSauce);
+router.post('/', auth, multer, sauceController.createSauce);
+router.put('/:id', auth, multer, sauceController.modifyOneSauce);
 router.delete('/:id', auth, sauceController.deleteOneSauce);
-// router.post('/:id/like', auth, sauceController.likeOneSauce);
+router.post('/:id/like', auth, sauceController.likeOneSauce);
 
 module.exports = router;

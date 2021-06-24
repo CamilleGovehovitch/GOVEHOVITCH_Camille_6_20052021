@@ -3,6 +3,8 @@ const saucesRoutes = require('./routes/sauceRoutes');
 const userRoutes = require('./routes/userRoutes');
 const path = require('path');
 
+const helmet = require("helmet");
+
 const mongoose = require('mongoose');
 
 const app = express();
@@ -21,6 +23,7 @@ mongoose.connect('mongodb+srv://camilleG:%23B%40con93100@databasecluster.g1ov1.m
     .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
+// app.use(helmet());
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/sauces', saucesRoutes);
