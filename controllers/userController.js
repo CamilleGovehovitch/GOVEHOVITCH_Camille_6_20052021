@@ -1,47 +1,26 @@
 const UserModel = require('../models/User');
 const bCrypt = require('bCrypt');
 const jwt = require('jsonwebtoken');
-// we use maskdata package to mask private data
+// we use maskdata to mask private data
 const MaskData = require('maskdata');
-
-const roles  = require('../role/role');
- 
-exports.grantAccess = function(action, resource) {
- return async (req, res, next) => {
-  try {
-   const permission = roles.can(req.user.role)[action](resource);
-   if (!permission.granted) {
-    return res.status(401).json({
-     error: "You don't have enough permission to perform this action"
-    });
-   }
-   next()
-  } catch (error) {
-   next(error)
-  }
- }
-}
-
-
+ // MASK options 
+ const maskEmailOptions = {
+  maskWith: "X", 
+  unmaskedStartCharactersBeforeAt: 0,
+  unmaskedEndCharactersAfterAt: 10,
+  maskAtTheRate: false
+};
 
 exports.signup = (req, res, next) => {
   console.log('[POST] Create User');
-  // MASK email before DB
-  const maskEmailOptions = {
-    maskWith: "())==D", 
-    unmaskedStartCharactersBeforeAt: 0,
-    unmaskedEndCharactersAfterAt: 0,
-    maskAtTheRate: false
-  };
+  // on mask une partie de l'email en db
   const maskedEmail =  MaskData.maskEmail2(req.body.email, maskEmailOptions);
 
   bCrypt.hash(req.body.password, 10)
     .then( hash => {
       const user = new UserModel({
-        userId: req.body.id,
-        email: req.body.email,
-        password: hash,
-        role: 'basic'
+        email: maskedEmail,
+        password: hash
       });
       user.save()
         .then( () => res.status(201).json({message: 'Utilisateur crée avec succèes'}))
@@ -56,41 +35,21 @@ exports.signup = (req, res, next) => {
     });
 
 };
-
+// decoder l'email afinde se connecter avec mskdata
+// 
 exports.login = (req, res, next) => {
   console.log('[POST]Login user');
-
-  UserModel.findOne({email: req.body.email})
+  // on utilise le même mask pour retrouver l'email en db et se connecter
+  UserModel.findOne({email: MaskData.maskEmail2(req.body.email, maskEmailOptions)})
     .then( user => {
       if(!user) {
          return res.status(401).json({error: 'Utilisateur non trouvé'});
       } 
-      console.log('User founded');
       bCrypt.compare(req.body.password, user.password)
         .then( (valid) => {
             if (!valid) {
               return res.status(401).json({error: 'Mot de passe incorrect'});
             }
-            console.log('User connected');
-
-            const maskPasswordOptions = {
-              maskWith: "X",
-              unmaskedStartCharacters: 0,
-              unmaskedEndCharacters: 0 
-            };
-            const maskEmailOptions = {
-              maskWith: "*", 
-              unmaskedStartCharactersBeforeAt: 0,
-              unmaskedEndCharactersAfterAt: 0,
-              maskAtTheRate: false
-          };
-            const userId = req.body.id;
-            const password = req.body.password;
-            const email =  req.body.email;
-            const maskedPassword = MaskData.maskPassword(password, maskPasswordOptions);
-            const maskedEmail =  MaskData.maskEmail2(email, maskEmailOptions);
-            const maskedUserId = MaskData.maskPassword(userId, maskPasswordOptions);
-            console.log(user._id);
             res.status(200).json({
               userId: user._id,
               token: jwt.sign(
@@ -98,7 +57,6 @@ exports.login = (req, res, next) => {
                 'RANDOM_TOKEN_SECRET',
                 { expiresIn: '24h' }
               ),
-              // role: user.role
             });
         })
         .catch(error => {
@@ -111,3 +69,13 @@ exports.login = (req, res, next) => {
       res.status(500).json({error});
     });
 };
+
+
+
+// proteger contre injection sql avec mongoose et helmet (protege contre certaine vunlerabilite) - fait
+// securiser l'auth broken authentification - 
+// cryptage ssl, certificat
+// maskdata pense a decoder ce qui est maské - fait
+// pas de role
+
+// const mask = MaskD
