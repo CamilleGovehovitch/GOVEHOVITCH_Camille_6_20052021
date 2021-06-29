@@ -122,7 +122,7 @@ const dealWithLikes = (likeType, decodedToken, sauce) => {
         case -1:
             included = sauce.usersDisliked.includes(decodedToken.userId);
             if(!included) {
-                sauce.dislikes -= 1;
+                sauce.dislikes += 1;
                 sauce.usersDisliked.push(decodedToken.userId);
                 return sauce.save()
             } else {
