@@ -3,6 +3,9 @@ const bCrypt = require('bCrypt');
 const jwt = require('jsonwebtoken');
 // we use maskdata to mask private data
 const MaskData = require('maskdata');
+// check password strengh
+const { passwordStrength } = require('check-password-strength');
+
  // MASK options 
  const maskEmailOptions = {
   maskWith: "X", 
@@ -15,7 +18,10 @@ exports.signup = (req, res, next) => {
   console.log('[POST] Create User');
   // on mask une partie de l'email en db
   const maskedEmail =  MaskData.maskEmail2(req.body.email, maskEmailOptions);
-
+  const passwordStrengthTested = passwordStrength(req.body.password).value;
+  if(passwordStrengthTested !== 'Strong') {
+    res.status(401).json({message: 'password ' + passwordStrengthTested});
+  }
   bCrypt.hash(req.body.password, 10)
     .then( hash => {
       const user = new UserModel({
@@ -35,8 +41,7 @@ exports.signup = (req, res, next) => {
     });
 
 };
-// decoder l'email afinde se connecter avec mskdata
-// 
+
 exports.login = (req, res, next) => {
   console.log('[POST]Login user');
   // on utilise le même mask pour retrouver l'email en db et se connecter
@@ -72,10 +77,6 @@ exports.login = (req, res, next) => {
 
 
 
-// proteger contre injection sql avec mongoose et helmet (protege contre certaine vunlerabilite) - fait
 // securiser l'auth broken authentification - 
-// cryptage ssl, certificat
-// maskdata pense a decoder ce qui est maské - fait
-// pas de role
+// cryptage ssl, certificat - possible en local?
 
-// const mask = MaskD
