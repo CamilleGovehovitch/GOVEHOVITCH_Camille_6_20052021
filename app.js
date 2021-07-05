@@ -59,5 +59,3 @@ app.use('/api/auth', userRoutes);
 module.exports = app;
 
 // helmet permet dattenuer les attaques, dns, ssl, 
-// deux type d'admin peuvent effectuer des actions ds la db
-// cree un admin sur mongo db read write any database
