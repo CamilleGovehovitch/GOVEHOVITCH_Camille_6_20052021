@@ -28,4 +28,5 @@
         
     Renommer le fichier .env.exemple à la racine du projet backend de sopeckoko en .env, il contiendra les variables d'environnements.
     Le fichier .env.exemple contient les exemples non remplis de variables d'environnement utilisées.
+
     Les informations concernant les variables d'environnements vous sont fournies par l'administrateur dans un fichier crédentials
