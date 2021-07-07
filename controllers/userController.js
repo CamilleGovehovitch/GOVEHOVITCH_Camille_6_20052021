@@ -43,11 +43,12 @@ exports.login = (req, res, next) => {
             res.status(200).json({
               userId: user._id,
               token: jwt.sign(
-                {userId: user._id},
-                'RANDOM_SECRET_KEY',
-                {expiresIn: '24h'}
-              )
-            })
+
+                { userId: user._id },
+                process.env.DB_SECRET_KEY,
+                { expiresIn: '24h' }
+              ),
+            });
         })
         .catch(error => {
           console.log(['[500]', error]);
